@@ -1,3 +1,91 @@
-service : {
-    "greet": (text) -> (text) query;
+type AllowanceRequest = record {
+  token : text;
+  owner : User;
+  spender : principal;
+};
+type ApproveRequest = record {
+  token : text;
+  subaccount : opt vec nat8;
+  allowance : nat32;
+  spender : principal;
+};
+type BalanceRequest = record { token : text; user : User };
+type ClaimRequest = record { to : User; index : nat32 };
+type CommonError = variant { InvalidToken : text; Other : text };
+type Info = record {
+  reserve : nat32;
+  claimed : nat32;
+  available : nat32;
+  supply : nat32;
+};
+type Metadata = variant {
+  fungible : record {
+    decimals : nat8;
+    metadata : opt vec nat8;
+    name : text;
+    symbol : text;
+  };
+  nonfungible : record { metadata : opt vec nat8 };
+};
+type MintRequest = record { to : User; metadata : opt vec nat8 };
+type Result = variant { Ok : nat32; Err : CommonError };
+type Result_1 = variant { Ok : text; Err : CommonError };
+type Result_2 = variant { Ok : TokenObj; Err : text };
+type Result_3 = variant { Ok : Metadata; Err : CommonError };
+type Result_4 = variant { Ok : vec nat32; Err : CommonError };
+type Result_5 = variant { Ok : nat32; Err : TransferError };
+type TokenObj = record { canister : vec nat8; index : nat32 };
+type TransferError = variant {
+  CannotNotify : text;
+  InsufficientBalance : nat32;
+  InvalidToken : text;
+  Rejected;
+  Unauthorized : text;
+  Other : text;
+};
+type TransferRequest = record {
+  to : User;
+  token : text;
+  from : User;
+  memo : vec nat8;
+  subaccount : opt vec nat8;
+  amount : nat32;
+};
+type User = variant { "principal" : principal; address : text };
+service : (principal) -> {
+  account_id : (principal) -> (text) query;
+  add_manager : (principal) -> (nat64);
+  allowance : (AllowanceRequest) -> (Result) query;
+  approve : (ApproveRequest) -> (bool);
+  approveAll : (vec ApproveRequest) -> (vec nat32);
+  balance : (BalanceRequest) -> (Result) query;
+  batchMintNFT : (vec MintRequest) -> (vec nat32);
+  bearer : (text) -> (Result_1) query;
+  canister_id : () -> (principal) query;
+  claim : (principal) -> (nat32);
+  claim_supply : () -> (Result) query;
+  decode_id : (text) -> (Result_2) query;
+  extensions : () -> (vec text) query;
+  force_claim_reserve : (ClaimRequest) -> (nat32);
+  getAllowances : () -> (vec record { nat32; principal }) query;
+  getMinter : () -> (principal) query;
+  getRegistry : () -> (vec record { nat32; text }) query;
+  getTokens : (nat32) -> (vec record { nat32; Metadata }) query;
+  getTokensByIds : (vec nat32) -> (vec record { nat32; Metadata }) query;
+  init_reserve : (nat32) -> ();
+  is_claimable : (principal) -> (bool);
+  is_manager : (principal) -> (bool) query;
+  is_principal : (text) -> (bool) query;
+  metadata : (text) -> (Result_3) query;
+  mintNFT : (MintRequest) -> (nat32);
+  next_claim_id : () -> (Result) query;
+  pop_status : () -> (Info) query;
+  reserve_tokens : () -> (vec nat32) query;
+  setMinter : (principal) -> ();
+  set_claim_supply : (nat32) -> ();
+  supply : (text) -> (Result) query;
+  test : () -> (User) query;
+  token_id : (nat32) -> (text) query;
+  tokens : (text) -> (Result_4) query;
+  transfer : (TransferRequest) -> (Result_5);
 }

@@ -1,4 +1,19 @@
-#[ic_cdk::query]
-fn greet(name: String) -> String {
-    format!("Hello, {}!", name)
+mod actor;
+mod service;
+mod types;
+mod token;
+mod state;
+
+#[allow(dead_code)]
+#[cfg(any(target_arch = "wasm32", test))]
+fn main() {}
+
+#[allow(dead_code)]
+#[cfg(not(any(target_arch = "wasm32", test)))]
+fn main() {
+    use ic_cdk::export::Principal;
+    use crate::types::*;
+
+    candid::export_service!();
+    std::print!("{}", __export_service());
 }
